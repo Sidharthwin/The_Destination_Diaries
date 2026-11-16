@@ -23,7 +23,7 @@ Copy `.env.example` → `.env.local` (Next.js) and `.env` (Prisma CLI reads `.en
 | `MAPBOX_SECRET_TOKEN` | **no** | optional | Server-side Directions API. Unset → heuristic routing (labelled) |
 | `ANTHROPIC_API_KEY` | **no** | optional | LLM personalization/explanations. Unset → deterministic fallbacks |
 | `LLM_PROVIDER` | no | optional | `anthropic` (default) — adapter selector |
-| `LLM_MODEL` | no | optional | default `claude-sonnet-5-5` |
+| `LLM_MODEL` | no | optional | default `claude-opus-5-5` |
 | `NEXT_PUBLIC_SITE_URL` | yes | ✅ in prod | Canonical URL for auth redirects, e.g. `https://yourdomain.com` |
 
 The app **boots and builds with only the Supabase + database variables**; optional providers degrade gracefully with labelled heuristics.

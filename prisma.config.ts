@@ -8,9 +8,12 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    // Pooled connection for the app (Supabase transaction pooler, port 6543).
-    url: process.env.DATABASE_URL ?? "postgresql://localhost:5432/placeholder",
-    // Direct connection for migrations (port 5432).
-    directUrl: process.env.DIRECT_URL,
+    // Used by the Prisma CLI (migrations, introspection): prefer the direct
+    // connection. The app itself connects through the pg driver adapter using
+    // DATABASE_URL (see src/server/db/prisma.ts).
+    url:
+      process.env.DIRECT_URL ??
+      process.env.DATABASE_URL ??
+      "postgresql://localhost:5432/placeholder",
   },
 });
