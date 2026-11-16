@@ -1,0 +1,666 @@
+// Destination Diaries — database schema
+// PostGIS geometry columns, triggers, GIST/trigram indexes and RLS policies
+// are added in raw SQL migration steps (see prisma/migrations and supabase/rls).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+
+enum StateKind {
+  STATE
+  UNION_TERRITORY
+}
+
+enum CityKind {
+  CITY
+  TOWN
+  VILLAGE
+}
+
+enum PlaceKind {
+  ATTRACTION
+  RESTAURANT
+  MUSEUM
+  RELIGIOUS_SITE
+  NATURE
+  SHOPPING
+  ACTIVITY
+  VIEWPOINT
+  OTHER
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  COMMUNITY
+  VERIFIED
+}
+
+enum DataProvider {
+  OSM
+  MANUAL
+  MAPBOX
+  USER
+}
+
+enum PriceKind {
+  ENTRY_INDIAN
+  ENTRY_FOREIGNER
+  MEAL_AVG
+  ACTIVITY
+}
+
+enum AmountSource {
+  VERIFIED
+  PROVIDER_ESTIMATE
+  HEURISTIC_ESTIMATE
+  USER_ENTERED
+  USER_REPORTED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum TravelStyle {
+  BUDGET
+  BACKPACKING
+  ADVENTURE
+  RELAXATION
+  CULTURAL
+  FAMILY
+  LUXURY
+}
+
+enum TransportPref {
+  PUBLIC_TRANSPORT
+  CAR_WITH_DRIVER
+  SELF_DRIVE
+  TWO_WHEELER
+  WALKING_FOCUSED
+  MIXED
+}
+
+enum AccommodationPref {
+  HOSTEL
+  BUDGET_HOTEL
+  MID_RANGE_HOTEL
+  LUXURY_HOTEL
+  HOMESTAY
+  RESORT
+}
+
+enum TripStatus {
+  DRAFT
+  GENERATING
+  PLANNED
+  ARCHIVED
+}
+
+enum VersionOrigin {
+  GENERATOR
+  REPLAN
+  USER_EDIT
+}
+
+enum TravelMode {
+  WALK
+  AUTO
+  TAXI
+  BUS
+  TRAIN
+}
+
+enum RouteProvider {
+  HEURISTIC
+  MAPBOX
+}
+
+enum CollaboratorRole {
+  VIEWER
+  EDITOR
+}
+
+enum BudgetCategory {
+  ACCOMMODATION
+  INTERCITY_TRANSPORT
+  LOCAL_TRANSPORT
+  FOOD
+  ATTRACTION_ENTRY
+  ACTIVITIES
+  SHOPPING
+  MISC
+}
+
+enum Confidence {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ReportKind {
+  CLOSED
+  WRONG_INFO
+  DUPLICATE
+  INAPPROPRIATE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  REJECTED
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum FeedbackStatus {
+  NEW
+  REVIEWED
+  CLOSED
+}
+
+// ─────────────────────── Geographic data ───────────────────────
+
+model State {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @unique
+  slug      String    @unique
+  code      String    @unique // ISO 3166-2, e.g. IN-RJ
+  kind      StateKind
+  districts District[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("states")
+}
+
+model District {
+  id        String   @id @default(uuid()) @db.Uuid
+  stateId   String   @db.Uuid
+  state     State    @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  name      String
+  slug      String
+  cities    City[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([stateId, slug])
+  @@map("districts")
+}
+
+model City {
+  id           String   @id @default(uuid()) @db.Uuid
+  districtId   String   @db.Uuid
+  district     District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String   @unique
+  kind         CityKind @default(CITY)
+  lat          Float
+  lng          Float
+  description  String?
+  heroImageUrl String?
+  heroImageAttribution String?
+  isDestination Boolean @default(false)
+  places       Place[]
+  trips        Trip[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([districtId])
+  @@index([isDestination])
+  @@map("cities")
+}
+
+model Place {
+  id                 String             @id @default(uuid()) @db.Uuid
+  cityId             String             @db.Uuid
+  city               City               @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  name               String
+  slug               String
+  kind               PlaceKind
+  lat                Float
+  lng                Float
+  description        String?
+  typicalVisitMins   Int?
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  lastVerifiedAt     DateTime?
+  isActive           Boolean            @default(true)
+  categories         PlaceCategoryMap[]
+  sources            PlaceSource[]
+  images             PlaceImage[]
+  openingHours       PlaceOpeningHour[]
+  prices             PlacePrice[]
+  savedBy            SavedPlace[]
+  stops              ItineraryStop[]
+  reports            PlaceReport[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@unique([cityId, slug])
+  @@index([cityId, isActive])
+  @@index([kind])
+  @@map("places")
+}
+
+model PlaceCategory {
+  id        String             @id @default(uuid()) @db.Uuid
+  slug      String             @unique
+  name      String
+  places    PlaceCategoryMap[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@map("place_categories")
+}
+
+model PlaceCategoryMap {
+  placeId    String        @db.Uuid
+  place      Place         @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  categoryId String        @db.Uuid
+  category   PlaceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+
+  @@id([placeId, categoryId])
+  @@map("place_category_map")
+}
+
+model PlaceSource {
+  id          String       @id @default(uuid()) @db.Uuid
+  placeId     String       @db.Uuid
+  place       Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  provider    DataProvider
+  externalId  String
+  licence     String // e.g. "ODbL 1.0"
+  attribution String // e.g. "© OpenStreetMap contributors"
+  rawRef      String? // URL or raw payload reference
+  fetchedAt   DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([provider, externalId])
+  @@index([placeId])
+  @@map("place_sources")
+}
+
+model PlaceImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  placeId     String   @db.Uuid
+  place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  url         String
+  attribution String?
+  licence     String?
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([placeId])
+  @@map("place_images")
+}
+
+model PlaceOpeningHour {
+  id        String       @id @default(uuid()) @db.Uuid
+  placeId   String       @db.Uuid
+  place     Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  dayOfWeek Int // 0 = Sunday … 6 = Saturday
+  opensMin  Int // minutes from midnight
+  closesMin Int
+  validFrom DateTime?
+  validTo   DateTime?
+  source    AmountSource @default(HEURISTIC_ESTIMATE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([placeId, dayOfWeek])
+  @@map("place_opening_hours")
+}
+
+model PlacePrice {
+  id          String       @id @default(uuid()) @db.Uuid
+  placeId     String       @db.Uuid
+  place       Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  kind        PriceKind
+  amountPaise Int
+  currency    String       @default("INR")
+  source      AmountSource
+  verifiedAt  DateTime?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([placeId, kind])
+  @@map("place_prices")
+}
+
+// ─────────────────────────── User data ───────────────────────────
+
+model Profile {
+  id            String           @id @db.Uuid // = auth.users.id
+  email         String           @unique
+  displayName   String?
+  avatarUrl     String?
+  role          UserRole         @default(USER)
+  homeCity      String?
+  preference    UserPreference?
+  savedPlaces   SavedPlace[]
+  trips         Trip[]
+  collaborating TripCollaborator[]
+  actualExpenses ActualExpense[]
+  reportsFiled  PlaceReport[]    @relation("reporter")
+  reportsResolved PlaceReport[]  @relation("resolver")
+  feedback      Feedback[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@map("profiles")
+}
+
+model UserPreference {
+  profileId       String       @id @db.Uuid
+  profile         Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  travelStyle     TravelStyle?
+  interests       String[]     @default([])
+  dietary         String?
+  pacePreference  String? // relaxed | moderate | packed
+  defaultCurrency String       @default("INR")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("user_preferences")
+}
+
+model SavedPlace {
+  id        String   @id @default(uuid()) @db.Uuid
+  profileId String   @db.Uuid
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  placeId   String   @db.Uuid
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, placeId])
+  @@map("saved_places")
+}
+
+// ─────────────────────────── Trip data ───────────────────────────
+
+model Trip {
+  id                  String             @id @default(uuid()) @db.Uuid
+  ownerId             String             @db.Uuid
+  owner               Profile            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title               String
+  destinationCityId   String             @db.Uuid
+  destinationCity     City               @relation(fields: [destinationCityId], references: [id])
+  startDate           DateTime           @db.Date
+  endDate             DateTime           @db.Date
+  travellers          Int                @default(1)
+  status              TripStatus         @default(DRAFT)
+  travelStyle         TravelStyle?
+  interests           String[]           @default([])
+  transportPref       TransportPref?
+  accommodationPref   AccommodationPref?
+  specialRequirements String?
+  activeVersionId     String?            @unique @db.Uuid
+  activeVersion       ItineraryVersion?  @relation("activeVersion", fields: [activeVersionId], references: [id])
+  shareSlug           String?            @unique
+  shareEnabled        Boolean            @default(false)
+  days                TripDay[]
+  versions            ItineraryVersion[] @relation("tripVersions")
+  collaborators       TripCollaborator[]
+  budget              TripBudget?
+  actualExpenses      ActualExpense[]
+  generationLogs      GenerationLog[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([ownerId, status])
+  @@map("trips")
+}
+
+model TripDay {
+  id        String          @id @default(uuid()) @db.Uuid
+  tripId    String          @db.Uuid
+  trip      Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  date      DateTime        @db.Date
+  index     Int
+  notes     String?
+  stops     ItineraryStop[]
+  estimates ExpenseEstimate[]
+  actuals   ActualExpense[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([tripId, index])
+  @@map("trip_days")
+}
+
+model ItineraryVersion {
+  id                  String          @id @default(uuid()) @db.Uuid
+  tripId              String          @db.Uuid
+  trip                Trip            @relation("tripVersions", fields: [tripId], references: [id], onDelete: Cascade)
+  versionNumber       Int
+  label               String?
+  createdBy           VersionOrigin
+  generationParams    Json?
+  summary             String?
+  isFeasible          Boolean         @default(true)
+  infeasibilityReason Json?
+  stops               ItineraryStop[]
+  routeLegs           RouteLeg[]
+  estimates           ExpenseEstimate[]
+  activeFor           Trip?           @relation("activeVersion")
+  generationLogs      GenerationLog[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@unique([tripId, versionNumber])
+  @@map("itinerary_versions")
+}
+
+model ItineraryStop {
+  id               String           @id @default(uuid()) @db.Uuid
+  versionId        String           @db.Uuid
+  version          ItineraryVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  tripDayId        String           @db.Uuid
+  tripDay          TripDay          @relation(fields: [tripDayId], references: [id], onDelete: Cascade)
+  placeId          String           @db.Uuid
+  place            Place            @relation(fields: [placeId], references: [id])
+  orderIndex       Int
+  arrivalMin       Int // minutes from midnight
+  departureMin     Int
+  visitDurationMins Int
+  note             String?
+  locked           Boolean          @default(false)
+  legsFrom         RouteLeg[]       @relation("fromStop")
+  legsTo           RouteLeg[]       @relation("toStop")
+  estimates        ExpenseEstimate[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([versionId, tripDayId, orderIndex])
+  @@map("itinerary_stops")
+}
+
+model RouteLeg {
+  id             String           @id @default(uuid()) @db.Uuid
+  versionId      String           @db.Uuid
+  version        ItineraryVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  fromStopId     String           @db.Uuid
+  fromStop       ItineraryStop    @relation("fromStop", fields: [fromStopId], references: [id], onDelete: Cascade)
+  toStopId       String           @db.Uuid
+  toStop         ItineraryStop    @relation("toStop", fields: [toStopId], references: [id], onDelete: Cascade)
+  mode           TravelMode
+  distanceMeters Int
+  durationMins   Int
+  provider       RouteProvider
+  polyline       String?
+  estimatedAt    DateTime
+  createdAt      DateTime         @default(now())
+
+  @@index([versionId])
+  @@map("route_legs")
+}
+
+model TripCollaborator {
+  id         String           @id @default(uuid()) @db.Uuid
+  tripId     String           @db.Uuid
+  trip       Trip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  profileId  String           @db.Uuid
+  profile    Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  roleInTrip CollaboratorRole @default(VIEWER)
+  createdAt  DateTime         @default(now())
+
+  @@unique([tripId, profileId])
+  @@map("trip_collaborators")
+}
+
+// ───────────────────────────── Budget ─────────────────────────────
+
+model TripBudget {
+  tripId            String   @id @db.Uuid
+  trip              Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  totalPaise        BigInt
+  currency          String   @default("INR")
+  categoryCapsPaise Json? // { "FOOD": 500000, ... }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("trip_budgets")
+}
+
+model ExpenseEstimate {
+  id         String           @id @default(uuid()) @db.Uuid
+  versionId  String           @db.Uuid
+  version    ItineraryVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  tripDayId  String?          @db.Uuid
+  tripDay    TripDay?         @relation(fields: [tripDayId], references: [id], onDelete: Cascade)
+  stopId     String?          @db.Uuid
+  stop       ItineraryStop?   @relation(fields: [stopId], references: [id], onDelete: Cascade)
+  category   BudgetCategory
+  amountPaise BigInt
+  currency   String           @default("INR")
+  source     AmountSource
+  confidence Confidence       @default(LOW)
+  notes      String?
+  createdAt  DateTime         @default(now())
+
+  @@index([versionId, category])
+  @@map("expense_estimates")
+}
+
+model ActualExpense {
+  id          String         @id @default(uuid()) @db.Uuid
+  tripId      String         @db.Uuid
+  trip        Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripDayId   String?        @db.Uuid
+  tripDay     TripDay?       @relation(fields: [tripDayId], references: [id], onDelete: SetNull)
+  category    BudgetCategory
+  amountPaise BigInt
+  currency    String         @default("INR")
+  spentAt     DateTime
+  note        String?
+  enteredById String         @db.Uuid
+  enteredBy   Profile        @relation(fields: [enteredById], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([tripId, spentAt])
+  @@map("actual_expenses")
+}
+
+// ─────────────────────────── Operations ───────────────────────────
+
+model PlaceReport {
+  id             String       @id @default(uuid()) @db.Uuid
+  placeId        String       @db.Uuid
+  place          Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  reporterId     String?      @db.Uuid
+  reporter       Profile?     @relation("reporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  kind           ReportKind
+  detail         String
+  status         ReportStatus @default(OPEN)
+  resolvedById   String?      @db.Uuid
+  resolvedBy     Profile?     @relation("resolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolutionNote String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([status])
+  @@map("place_reports")
+}
+
+model IngestionJob {
+  id         String    @id @default(uuid()) @db.Uuid
+  provider   DataProvider
+  regionRef  String // e.g. "city:jaipur" or an OSM relation id
+  status     JobStatus @default(PENDING)
+  stats      Json? // { fetched, created, updated, skipped }
+  error      String?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([status])
+  @@map("ingestion_jobs")
+}
+
+model ProviderUsageLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  provider  String // "mapbox-directions" | "anthropic" | "osm-overpass" | ...
+  operation String
+  status    String // "ok" | "error" | "rate_limited"
+  latencyMs Int
+  errorCode String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([provider, createdAt])
+  @@map("provider_usage_logs")
+}
+
+model GenerationLog {
+  id           String            @id @default(uuid()) @db.Uuid
+  tripId       String            @db.Uuid
+  trip         Trip              @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  versionId    String?           @db.Uuid
+  version      ItineraryVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  stage        String // "preferences" | "candidates" | "schedule" | "explain" | ...
+  model        String?
+  inputTokens  Int?
+  outputTokens Int?
+  durationMs   Int
+  ok           Boolean
+  error        String?
+  createdAt    DateTime          @default(now())
+
+  @@index([tripId])
+  @@map("generation_logs")
+}
+
+model Feedback {
+  id        String         @id @default(uuid()) @db.Uuid
+  profileId String?        @db.Uuid
+  profile   Profile?       @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  email     String?
+  topic     String
+  message   String
+  status    FeedbackStatus @default(NEW)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([status])
+  @@map("feedback")
+}
