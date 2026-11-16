@@ -300,7 +300,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
         <div className="flex-1">
           {step === 0 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">Where are you headed?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">Where are you headed?</legend>
               <p className="mt-3 text-ink-soft">These are the destinations we can plan today. More are being added.</p>
               <Label htmlFor="dest-filter" className="sr-only">Filter destinations</Label>
               <Input id="dest-filter" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by name or state" className="mt-6 h-11 max-w-sm bg-paper" />
@@ -328,7 +328,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 1 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">When are you going?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">When are you going?</legend>
               <p className="mt-3 text-ink-soft">Dates matter: some places close on particular weekdays.</p>
               <div className="mt-8 grid max-w-xl gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -351,7 +351,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 2 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">How many of you?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">How many of you?</legend>
               <p className="mt-3 text-ink-soft">Used for rooms, vehicles and per-person costs.</p>
               <div className="mt-8 flex items-center gap-6">
                 <button type="button" aria-label="One fewer traveller" disabled={v.travellers <= 1} onClick={() => set("travellers", v.travellers - 1)} className="inline-flex size-12 items-center justify-center rounded-full border border-border bg-paper hover:border-forest disabled:opacity-40"><Minus className="size-5" /></button>
@@ -363,7 +363,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 3 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">What is the total budget?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">What is the total budget?</legend>
               <p className="mt-3 max-w-xl text-ink-soft">For everyone, for the whole trip at the destination. Leave it blank to plan without a limit — you will still see estimates.</p>
               <div className="mt-8 max-w-sm space-y-2">
                 <Label htmlFor="budget">Total budget in rupees</Label>
@@ -384,7 +384,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 4 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">How do you like to travel?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">How do you like to travel?</legend>
               <p className="mt-3 text-ink-soft">Shapes the pace of each day, which places rise to the top, and budget assumptions. Optional.</p>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {TRAVEL_STYLES.map((s) => {
@@ -404,7 +404,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 5 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">What are you into?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">What are you into?</legend>
               <p className="mt-3 text-ink-soft">Pick as many as you like. Leave empty if you are open to anything.</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 {INTERESTS.map((i) => {
@@ -422,7 +422,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 6 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">How will you get around?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">How will you get around?</legend>
               <p className="mt-3 text-ink-soft">Affects travel-time estimates and local transport costs. Optional.</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 {TRANSPORT_PREFS.map((t) => {
@@ -435,7 +435,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 7 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">Where do you like to stay?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">Where do you like to stay?</legend>
               <p className="mt-3 max-w-xl text-ink-soft">Used only for a planning estimate of accommodation cost — we do not check availability or prices. Optional.</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 {ACCOMMODATION_PREFS.map((a) => {
@@ -448,7 +448,7 @@ function WizardForm({ destinations, initial, draftId, today }: WizardProps) {
 
           {step === 8 && (
             <fieldset>
-              <legend className="text-4xl sm:text-5xl">Anything we should know?</legend>
+              <legend className="font-serif text-4xl sm:text-5xl">Anything we should know?</legend>
               <p className="mt-3 max-w-xl text-ink-soft">Mobility needs, travelling with children or elders, things to avoid. Optional — saved with your trip, and interpreted when AI assistance is enabled.</p>
               <Label htmlFor="special" className="sr-only">Special requirements</Label>
               <Textarea id="special" rows={6} maxLength={2000} value={v.specialRequirements} onChange={(e) => set("specialRequirements", e.target.value)}

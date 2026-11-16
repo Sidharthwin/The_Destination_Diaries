@@ -66,7 +66,7 @@ Spatial: `City.geom`, `Place.geom` are `geography(Point,4326)` columns created i
 ## 6. Indexes
 
 - GIST on `City.geom`, `Place.geom`.
-- `Place(cityId, isActive)`, `Place(kind)`, trigram/`tsvector` index on `Place.name` + `City.name` for search.
+- `Place(cityId, isActive)`, `Place(kind)`, trigram (GIN) indexes on `Place.name` and `City.name` for typo-tolerant search.
 - `Trip(ownerId, status)`, `ItineraryStop(versionId, tripDayId, orderIndex)`, `ExpenseEstimate(versionId, category)`, `ActualExpense(tripId, spentAt)`, `PlaceSource(provider, externalId)` unique.
 
 ## 7. Row Level Security
@@ -81,4 +81,9 @@ Applied via SQL migration (`supabase/rls/*.sql`). Service-role (Prisma) bypasses
 
 ## 8. Seeding policy
 
-`prisma/seed.ts` loads a clearly-labelled representative dataset: 5 diverse destinations (Jaipur — Rajasthan, Kochi — Kerala, Darjeeling — West Bengal, Hampi — Karnataka, Rishikesh — Uttarakhand) with ~15–25 places each, real coordinates from OSM (with `PlaceSource` attribution, ODbL), categories, and typical visit durations. Prices and opening hours are seeded **only** as `HEURISTIC_ESTIMATE`/`UNVERIFIED` — never as verified facts. All 36 states/UTs seeded as hierarchy roots.
+`prisma/seed.ts` loads a clearly labelled sample dataset (`prisma/seed-data.ts`): all 36 states and union territories as hierarchy roots, and five geographically diverse destinations (Jaipur — Rajasthan, Kochi — Kerala, Darjeeling — West Bengal, Hampi — Karnataka, Rishikesh — Uttarakhand) with 14–15 places each.
+
+- Place names are real; coordinates are approximate and hand-entered; visit durations are editorial rules of thumb.
+- Every place is `UNVERIFIED` with a `MANUAL` `PlaceSource` record naming the sample dataset.
+- **No prices, ratings or opening hours are seeded.** Those arrive only through an admin (with a stated source) or a licensed provider import.
+- The seed is idempotent and records itself as an `IngestionJob`.

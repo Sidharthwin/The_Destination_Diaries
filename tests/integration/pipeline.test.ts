@@ -32,7 +32,8 @@ afterAll(async () => {
   setLlmProviderForTests(undefined);
   setRoutingProviderForTests(undefined);
   setPlaceProviderForTests("OSM", null);
-  await prisma.place.deleteMany({ where: { sources: { some: { externalId: { startsWith: "test/" } } } } });
+  // Only the place this suite created — merged sources are detached, never the seeded place itself.
+  await prisma.place.deleteMany({ where: { name: "Test Stepwell of Hampi" } });
   await prisma.placeSource.deleteMany({ where: { externalId: { startsWith: "test/" } } });
   await prisma.ingestionJob.deleteMany({ where: { regionRef: "city:hampi", provider: "OSM" } });
   await resetTestData();

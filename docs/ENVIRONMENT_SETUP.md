@@ -2,7 +2,8 @@
 
 ## 1. Prerequisites
 
-- Node.js ≥ 20, npm ≥ 10
+- Node.js ≥ 20 (22+ recommended — Supabase is dropping Node 20 support), npm ≥ 10
+- Docker, if you want a local database (see the README quick start)
 - A Supabase project (free tier works): https://supabase.com/dashboard
 - A Mapbox account for map rendering: https://account.mapbox.com
 - (Optional) An Anthropic API key for AI personalization/explanations
@@ -25,6 +26,9 @@ Copy `.env.example` → `.env.local` (Next.js) and `.env` (Prisma CLI reads `.en
 | `LLM_PROVIDER` | no | optional | `anthropic` (default) — adapter selector |
 | `LLM_MODEL` | no | optional | default `claude-opus-5-5` |
 | `NEXT_PUBLIC_SITE_URL` | yes | ✅ in prod | Canonical URL for auth redirects, e.g. `https://yourdomain.com` |
+| `ADMIN_EMAILS` | **no** | optional | Comma-separated emails promoted to admin when they sign in |
+| `DEV_AUTH` | **no** | local only | `1` enables test sign-in identities. Ignored when `NODE_ENV=production` |
+| `OVERPASS_URL` | no | optional | Alternative Overpass endpoint for OpenStreetMap imports |
 
 The app **boots and builds with only the Supabase + database variables**; optional providers degrade gracefully with labelled heuristics.
 

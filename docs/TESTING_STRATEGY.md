@@ -50,3 +50,13 @@ Run on desktop Chromium + iPhone-size viewport. Reduced-motion is enabled in E2E
 - No test may depend on a live third-party API: Mapbox/LLM providers are faked at the interface boundary; the heuristic path is the tested default.
 - Test data comes from the seed script or per-test factories; tests never assert on fabricated "verified" real-world facts.
 - Flaky tests are fixed or quarantined with an issue, never ignored.
+
+## 6. Current state
+
+| Suite | Count | Notes |
+|---|---|---|
+| Unit (`npm test`) | 56 | Optimizer, scheduler, scorer, budget, money, OSM normalisation, validation, redirect safety |
+| Integration (`npm run test:int`) | 36 | Real route handlers and services against PostgreSQL + PostGIS; only the session layer and third-party providers are faked |
+| End-to-end (`npm run test:e2e`) | 24 pass, 2 skip | Desktop and mobile. The two skipped tests (sign-up validation, Google hand-off) run automatically once `NEXT_PUBLIC_SUPABASE_URL` is set |
+
+End-to-end tests sign in through the local development sign-in (`DEV_AUTH=1`). Real Supabase email and Google flows must be checked by hand after deployment — see DEPLOYMENT.md §4.

@@ -117,3 +117,13 @@ POST /api/trips/:id/generate
 ## 5. Environment & deployment
 
 Vercel (app) + Supabase (DB/Auth/Storage). All secrets server-side; only `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_MAPBOX_TOKEN` are public by design. Full list in `ENVIRONMENT_SETUP.md`. The app boots without optional providers (Mapbox Directions, LLM) and degrades gracefully with labelled heuristics.
+
+## 6. Implementation notes (as built)
+
+- **Next.js 16**: request interception lives in `src/proxy.ts` (the renamed middleware). It refreshes the Supabase session and redirects signed-out visitors away from protected pages; every page and API route still re-verifies the user on the server.
+- **Prisma 7**: connection URLs live in `prisma.config.ts`; the app connects through the `pg` driver adapter (`src/server/db/prisma.ts`), created lazily so builds need no database.
+- **shadcn/ui** components are the Base UI variant (`src/components/ui`), themed through CSS variables in `src/app/globals.css`.
+- **Local development sign-in** (`DEV_AUTH=1`, never active in production) provides fixed test identities so the product and the end-to-end tests work before Supabase is configured.
+- **Admin mutations** are server actions (`src/app/admin/actions.ts`); each re-checks admin rights.
+- **Maps** fall back to a schematic, to-scale route drawing when no Mapbox token is present.
+- **Edits fork on write**: generated and replanned versions are immutable; the first manual edit creates a "Your edits" version. After every change `finalizeVersion` recomputes times, legs, estimates, warnings and feasibility.
