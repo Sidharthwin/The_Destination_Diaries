@@ -51,6 +51,7 @@ async function main() {
         lat: d.lat,
         lng: d.lng,
         heroImageUrl: d.heroImageUrl ?? `/images/destinations/${slugify(d.city)}.jpg`,
+        heroImageAttribution: d.heroImageAttribution ?? null,
       },
       create: {
         districtId: district.id,
@@ -61,6 +62,7 @@ async function main() {
         lng: d.lng,
         description: d.description,
         heroImageUrl: d.heroImageUrl ?? `/images/destinations/${slugify(d.city)}.jpg`,
+        heroImageAttribution: d.heroImageAttribution ?? null,
         isDestination: true,
       },
     });
