@@ -130,12 +130,20 @@ export async function updateTrip(tripId: string, userId: string, input: UpdateTr
     throw new ServiceError("VALIDATION", "Trips longer than 21 days are not supported yet");
   }
   const datesChanged = startIso !== toIsoDate(trip.startDate) || endIso !== toIsoDate(trip.endDate);
+  if (input.destinationCityId && input.destinationCityId !== trip.destinationCityId) {
+    if (trip.activeVersionId) {
+      throw new ServiceError("CONFLICT", "The destination cannot change once an itinerary exists. Start a new trip instead.");
+    }
+    const city = await prisma.city.findUnique({ where: { id: input.destinationCityId } });
+    if (!city) throw new ServiceError("VALIDATION", "Unknown destination");
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.trip.update({
       where: { id: tripId },
       data: {
         title: input.title,
+        destinationCityId: input.destinationCityId,
         startDate: fromIsoDate(startIso),
         endDate: fromIsoDate(endIso),
         travellers: input.travellers,

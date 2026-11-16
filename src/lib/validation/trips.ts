@@ -53,6 +53,8 @@ export const createTripSchema = z
 export const updateTripSchema = z
   .object({
     title: z.string().trim().min(1).max(120).optional(),
+    /** Only allowed while the trip has no itinerary yet. */
+    destinationCityId: z.string().uuid().optional(),
     startDate: isoDate.optional(),
     endDate: isoDate.optional(),
     travellers: z.number().int().min(1).max(20).optional(),

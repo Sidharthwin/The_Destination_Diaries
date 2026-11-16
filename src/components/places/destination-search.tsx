@@ -22,10 +22,7 @@ export function DestinationSearch({ tone = "light", className }: { tone?: "light
 
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 2) {
-      setResults(null);
-      return;
-    }
+    if (term.length < 2) return;
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       try {
@@ -52,7 +49,9 @@ export function DestinationSearch({ tone = "light", className }: { tone?: "light
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
-  const empty = results && results.cities.length === 0 && results.places.length === 0;
+  // Results only count while the query is long enough to have produced them.
+  const shown = q.trim().length >= 2 ? results : null;
+  const empty = shown && shown.cities.length === 0 && shown.places.length === 0;
 
   return (
     <form
@@ -76,7 +75,7 @@ export function DestinationSearch({ tone = "light", className }: { tone?: "light
           id={`${listId}-input`}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          onFocus={() => results && setOpen(true)}
+          onFocus={() => shown && setOpen(true)}
           onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
           placeholder="Where in India? Try “Hampi” or “tea garden”"
           autoComplete="off"
@@ -91,7 +90,7 @@ export function DestinationSearch({ tone = "light", className }: { tone?: "light
           <ArrowRight aria-hidden className="size-4" />
         </button>
       </div>
-      {open && results && (
+      {open && shown && (
         <div id={listId} className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-border bg-paper text-left text-ink shadow-xl">
           {empty ? (
             <p className="px-5 py-4 text-sm text-ink-soft">
@@ -99,7 +98,7 @@ export function DestinationSearch({ tone = "light", className }: { tone?: "light
             </p>
           ) : (
             <ul className="max-h-80 overflow-y-auto py-2">
-              {results.cities.map((c) => (
+              {shown.cities.map((c) => (
                 <li key={c.id}>
                   <Link href={`/destinations/${c.slug}`} className="flex items-center gap-3 px-5 py-3 hover:bg-sand-soft" onClick={() => setOpen(false)}>
                     <MapPin aria-hidden className="size-4 text-terracotta-deep" />
@@ -109,7 +108,7 @@ export function DestinationSearch({ tone = "light", className }: { tone?: "light
                   </Link>
                 </li>
               ))}
-              {results.places.map((p) => (
+              {shown.places.map((p) => (
                 <li key={p.id}>
                   <Link href={`/destinations/${p.city.slug}#place-${p.id}`} className="flex items-baseline gap-3 px-5 py-3 hover:bg-sand-soft" onClick={() => setOpen(false)}>
                     <span className="font-medium">{p.name}</span>

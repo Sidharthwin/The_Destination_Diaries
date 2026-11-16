@@ -14,8 +14,9 @@ export function Counter({ value, format }: { value: number; format: (n: number) 
 
   useEffect(() => {
     if (!inView) return;
+    if (reduce) return;
     const controls = animate(from.current, value, {
-      duration: reduce ? 0 : 0.9,
+      duration: 0.9,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (v) => setShown(v),
     });
@@ -25,7 +26,8 @@ export function Counter({ value, format }: { value: number; format: (n: number) 
 
   return (
     <span ref={ref} className="tabular">
-      {format(Math.round(shown))}
+      {/* With reduced motion the figure is shown directly, never animated. */}
+      {format(Math.round(reduce ? value : shown))}
     </span>
   );
 }

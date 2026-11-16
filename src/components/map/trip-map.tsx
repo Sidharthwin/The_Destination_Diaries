@@ -36,13 +36,21 @@ export function TripMap(props: Props) {
   return <MapboxMap {...props} onFail={() => setFailed(true)} />;
 }
 
+function highlightMarker(node: HTMLElement, on: boolean, color: string) {
+  node.style.transform = `scale(${on ? 1.35 : 1})`;
+  node.style.background = on ? "#d97757" : color;
+  if (node.parentElement) node.parentElement.style.zIndex = on ? "5" : "1";
+}
+
 function MapboxMap({ points, activeId, onHover, onSelect, className, onFail }: Props & { onFail: () => void }) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("mapbox-gl").Map | null>(null);
   const markers = useRef(new Map<string, { marker: import("mapbox-gl").Marker; node: HTMLElement; color: string }>());
   const [ready, setReady] = useState(false);
   const handlers = useRef({ onHover, onSelect });
-  handlers.current = { onHover, onSelect };
+  useEffect(() => {
+    handlers.current = { onHover, onSelect };
+  }, [onHover, onSelect]);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,7 +121,10 @@ function MapboxMap({ points, activeId, onHover, onSelect, className, onFail }: P
       for (const [g, pts] of groups) {
         pts.forEach((p, i) => {
           const color = GROUP_COLORS[g % GROUP_COLORS.length];
+          // Mapbox positions the wrapper with a transform; the button inside is free to scale.
+          const wrapper = document.createElement("div");
           const node = document.createElement("button");
+          wrapper.appendChild(node);
           node.type = "button";
           node.textContent = pts.length > 1 ? String(i + 1) : "";
           node.setAttribute("aria-label", p.label);
@@ -122,7 +133,7 @@ function MapboxMap({ points, activeId, onHover, onSelect, className, onFail }: P
           node.addEventListener("mouseenter", () => handlers.current.onHover?.(p.id));
           node.addEventListener("mouseleave", () => handlers.current.onHover?.(null));
           node.addEventListener("click", () => handlers.current.onSelect?.(p.id));
-          const marker = new mapboxgl.Marker({ element: node }).setLngLat([p.lng, p.lat]).addTo(map);
+          const marker = new mapboxgl.Marker({ element: wrapper }).setLngLat([p.lng, p.lat]).addTo(map);
           markers.current.set(p.id, { marker, node, color });
         });
       }
@@ -139,12 +150,7 @@ function MapboxMap({ points, activeId, onHover, onSelect, className, onFail }: P
   }, [points, ready]);
 
   useEffect(() => {
-    for (const [id, m] of markers.current) {
-      const on = id === activeId;
-      m.node.style.transform = `${m.node.style.transform.replace(/ scale\([^)]*\)/, "")} scale(${on ? 1.35 : 1})`;
-      m.node.style.background = on ? "#d97757" : m.color;
-      m.node.style.zIndex = on ? "5" : "1";
-    }
+    for (const [id, m] of markers.current) highlightMarker(m.node, id === activeId, m.color);
   }, [activeId, points, ready]);
 
   return <div ref={el} className={cn("h-full w-full bg-sand-soft", className)} />;

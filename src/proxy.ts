@@ -12,6 +12,8 @@ const PROTECTED_PREFIXES = ["/dashboard", "/trips", "/my-trips", "/saved", "/pro
  * every page and API route re-verifies the user on the server.
  */
 export async function proxy(request: NextRequest) {
+  // Let server components know the requested path (for post-login redirects).
+  request.headers.set("x-pathname", request.nextUrl.pathname + request.nextUrl.search);
   let response = NextResponse.next({ request });
   let signedIn = false;
 
