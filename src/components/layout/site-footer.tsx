@@ -4,12 +4,20 @@ import { Logo } from "./logo";
 
 const COLUMNS = [
   {
+    title: "Diaries",
+    links: [
+      { href: "/discover", label: "Read sample diaries" },
+      { href: "/diaries/new", label: "Start a diary" },
+      { href: "/diaries", label: "My diaries" },
+    ],
+  },
+  {
     title: "Plan",
     links: [
+      { href: "/plan", label: "How planning works" },
       { href: "/explore", label: "Explore destinations" },
       { href: "/trips/new", label: "Plan a trip" },
       { href: "/my-trips", label: "My trips" },
-      { href: "/saved", label: "Saved places" },
     ],
   },
   {
@@ -39,11 +47,11 @@ export function SiteFooter({ destinations }: { destinations: { slug: string; nam
             <Logo className="text-cream" />
             <p className="mt-5 max-w-sm font-serif text-2xl italic leading-snug text-sand">{SITE_TAGLINE}</p>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-cream/70">
-              Itineraries are built by a deterministic planning engine. Travel times and costs are
-              estimates unless marked verified — always confirm timings and prices locally.
+              Diaries are saved privately in your own browser. Trip plans are built by a planning
+              engine; travel times and costs are estimates unless marked verified.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-5">
             {COLUMNS.map((col) => (
               <nav key={col.title} aria-label={col.title}>
                 <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-sand">{col.title}</h2>

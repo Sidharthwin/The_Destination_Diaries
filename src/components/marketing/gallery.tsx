@@ -76,8 +76,8 @@ export function DestinationGallery({ items }: { items: GalleryItem[] }) {
   const heading = (
     <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p className="eyebrow">Where to next</p>
-        <h2 className="mt-3 text-5xl sm:text-6xl">Five corners of a <span className="italic">very</span> large country</h2>
+        <p className="kicker">Where to next</p>
+        <h2 className="mt-3 text-5xl sm:text-6xl">Where will the next <span className="italic">chapter</span> be?</h2>
       </div>
       <Link href="/explore" className="text-sm font-semibold text-forest underline underline-offset-4">See everything we cover</Link>
     </div>

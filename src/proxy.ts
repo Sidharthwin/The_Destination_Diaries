@@ -4,7 +4,7 @@ import {
   DEV_AUTH_COOKIE, SUPABASE_ANON_KEY, SUPABASE_URL, isDevAuthEnabled, isSupabaseConfigured,
 } from "@/lib/supabase/config";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/trips", "/my-trips", "/saved", "/profile", "/admin"];
+const PROTECTED_PREFIXES = ["/dashboard", "/diaries", "/trips", "/my-trips", "/saved", "/profile", "/admin"];
 
 /**
  * Refreshes the Supabase session cookie on every request and performs an

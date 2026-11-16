@@ -50,4 +50,5 @@ export const BUDGET_CATEGORIES = [
 ] as const;
 
 export const SITE_NAME = "Destination Diaries";
-export const SITE_TAGLINE = "Your next adventure, intelligently planned.";
+export const SITE_TAGLINE = "Every journey deserves a book of its own.";
+export const PLAN_TAGLINE = "Your next adventure, intelligently planned.";

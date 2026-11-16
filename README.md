@@ -2,14 +2,19 @@
 
 > Your next adventure, intelligently planned.
 
-Destination Diaries is a trip planner for India. Its core is not a chatbot but a **planning engine**: it scores places against what you care about, groups them into days by geography, schedules them against the clock and opening hours, adds up the cost in exact rupees — and only then uses AI (optionally) to describe the result. Plans can be edited, replanned, versioned and shared.
+Destination Diaries turns journeys across India into **travel diaries you read like a book** — chapters, photographs, handwritten margin notes, five binding styles and a 3D page-turning reader. Alongside it is a **trip planner** built on a real planning engine (scoring, geographic clustering, scheduling, exact-rupee budgets) with editing, replanning and version history.
 
 It is a modular monolith: Next.js (App Router) + PostgreSQL/PostGIS via Prisma + Supabase Auth + Mapbox.
+
+> **Two halves, two levels of maturity.** The trip planner is full-stack and database-backed. The diary is a front end: diaries and their photos are saved for real, but **in the browser (IndexedDB)**, not on a server — so they do not sync between devices and cannot yet be published or co-edited.
 
 ## What works today
 
 | Area | Status |
 |---|---|
+| Diaries: bookshelf, create with live cover preview, chapter editor with autosave, photo upload, five styles, 3D book reader | ✅ tested (saved in the browser) |
+| Sample diaries, Discover page, public diary pages | ✅ tested (team-written examples) |
+| Landing page: scroll-driven opening book, photos-into-chapters demo, live style switcher | ✅ tested |
 | Public site: landing, explore, destination pages, how-it-works, about, contact, legal | ✅ |
 | Place search (typo-tolerant), filters, PostGIS nearby search | ✅ tested |
 | Trip wizard (10 steps, draft saving), trip CRUD | ✅ tested |
@@ -62,9 +67,9 @@ To connect real accounts, maps and AI, follow [docs/ENVIRONMENT_SETUP.md](docs/E
 | `npm run dev` | Development server |
 | `npm run build` / `npm start` | Production build / serve |
 | `npm run lint` · `npm run typecheck` | ESLint · TypeScript |
-| `npm test` | Unit tests — pure engine logic, no database (56 tests) |
+| `npm test` | Unit tests — pure engine and diary-layout logic, no database (68 tests) |
 | `npm run test:int` | Integration tests — real route handlers against a real database (36 tests) |
-| `npm run test:e2e` | Playwright journeys, desktop + mobile (26 tests, 2 need Supabase credentials) |
+| `npm run test:e2e` | Playwright journeys, desktop + mobile (32 tests, 2 need Supabase credentials) |
 | `npm run db:migrate` · `npm run db:seed` | Apply migrations · load the sample dataset |
 
 ## How the engine works
@@ -88,7 +93,8 @@ preferences → candidate places (PostGIS radius) → explainable scoring
 
 ```
 src/app            routes: (public) (auth) (app) admin api shared
-src/components     ui (shadcn) · layout · marketing · map · places · trip · auth · motion
+src/components     ui (shadcn) · layout · marketing · diary · map · places · trip · auth · motion
+src/lib/diary      diary types, five templates, pagination, sample diaries, browser storage
 src/server         auth · db · services (optimizer, budget, itinerary, trips, places, ingestion) · providers (llm, routing, places)
 src/lib            validation (Zod) · constants · utils · supabase
 prisma             schema, migrations (init → PostGIS/search → RLS), seed
@@ -110,4 +116,4 @@ docs               requirements, architecture, database, API, setup, deployment,
 
 ## Data and credits
 
-Sample place data is hand-curated and unverified (see `prisma/seed-data.ts`). The import pipeline supports OpenStreetMap data — © OpenStreetMap contributors, ODbL 1.0 — with provenance stored per record. Photographs are by Wikimedia Commons contributors under CC BY / CC BY-SA; see [public/images/destinations/CREDITS.md](public/images/destinations/CREDITS.md).
+Sample place data is hand-curated and unverified (see `prisma/seed-data.ts`). The import pipeline supports OpenStreetMap data — © OpenStreetMap contributors, ODbL 1.0 — with provenance stored per record. Photographs are by Wikimedia Commons contributors under CC BY / CC BY-SA; see [public/images/destinations/CREDITS.md](public/images/destinations/CREDITS.md) and [public/images/diary/CREDITS.md](public/images/diary/CREDITS.md). The sample diaries are written by the project team as illustrations and are labelled as samples.

@@ -2,7 +2,7 @@
 
 Phased execution. A phase is complete only when its acceptance checks pass (lint, typecheck, relevant tests, build). Status legend: [ ] pending · [~] in progress · [x] done.
 
-**Status: all phases implemented.** Verified locally: lint and typecheck clean, 56 unit tests, 36 integration tests, 24 end-to-end tests (2 more skip until Supabase credentials exist), production build. Items that depend on external accounts (Supabase Auth, Mapbox, AI, live OpenStreetMap) are implemented but not verified against the real services — see KNOWN_LIMITATIONS.md.
+**Status: all phases implemented.** Verified locally: lint and typecheck clean, 68 unit tests, 36 integration tests, 30 end-to-end tests (2 more skip until Supabase credentials exist), production build. Items that depend on external accounts (Supabase Auth, Mapbox, AI, live OpenStreetMap) are implemented but not verified against the real services — see KNOWN_LIMITATIONS.md.
 
 ## PHASE 0 — Repository inspection & architecture docs
 - [x] Inspect repo (empty: README only, single commit on `main`)
@@ -72,3 +72,12 @@ Phased execution. A phase is complete only when its acceptance checks pass (lint
 - Deterministic math in services; LLM output always Zod-validated.
 - No dead buttons/links; every edit persists.
 - Commit at logical milestones.
+
+## PHASE 9 — Diary product and front-end redesign
+- [x] Design system refresh: Cormorant Garamond headlines, Caveat handwriting, paper grain, magazine labels, page transitions
+- [x] Diary data layer: types, five templates, pagination (unit tested), sample diaries, browser storage (IndexedDB) with photo resizing
+- [x] Book: container-query page renderer for all templates, covers, 3D page-flip viewer (keyboard, tap, mobile single-page)
+- [x] Screens: bookshelf, create with live cover preview, diary editor, chapter editor with autosave and live page preview, photo manager, reader
+- [x] Public: Discover, sample diary pages; landing page rebuilt (scroll-driven book, photos-into-chapters, style switcher, closing); planner marketing moved to /plan
+- [ ] Server-side diary storage, publishing, collaboration (not started — see KNOWN_LIMITATIONS.md)
+- Acceptance: 68 unit, 36 integration, 30 e2e passing (2 skipped pending Supabase); lint, typecheck and build clean

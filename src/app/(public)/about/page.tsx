@@ -11,10 +11,18 @@ export default async function AboutPage() {
       <PageHeader
         eyebrow="About"
         title={<>Travel planning that respects the <span className="italic">traveller</span></>}
-        intro="Destination Diaries is a trip planner for India built around one idea: a plan should be something you can trust, question and change."
+        intro="Destination Diaries does two things for travellers in India: it turns the trips you have taken into diaries you can read like a book, and it helps you plan the next one with a planner you can trust, question and change."
       />
       <Prose>
-        <h2>Why we built it</h2>
+        <h2>The diaries</h2>
+        <p>
+          A camera roll is not a memory. A diary gives a journey a shape: chapters, a few chosen
+          photographs, the line you scribbled in the margin. You choose a binding, write as much or
+          as little as you like, and turn the pages. Your diaries are saved privately in your own
+          browser. The diaries on our <a href="/discover">shelf</a> are examples written by our team.
+        </p>
+
+        <h2>Why we built the planner</h2>
         <p>
           Planning a trip in India means holding a lot in your head at once — distances that look
           short on a map and are not, monuments that close on a particular weekday, a budget that has

@@ -9,10 +9,10 @@ import { ButtonLink } from "./button-link";
 import { Logo } from "./logo";
 
 const LINKS = [
+  { href: "/discover", label: "Diaries" },
+  { href: "/plan", label: "Plan a trip" },
   { href: "/explore", label: "Explore" },
-  { href: "/how-it-works", label: "How it works" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export function SiteNav({ overHero = false, signedIn }: { overHero?: boolean; signedIn: boolean }) {
@@ -61,16 +61,16 @@ export function SiteNav({ overHero = false, signedIn }: { overHero?: boolean; si
         </ul>
         <div className="hidden items-center gap-3 md:flex">
           {signedIn ? (
-            <ButtonLink href="/dashboard" size="sm" variant={transparent ? "light" : "primary"}>
-              My trips
+            <ButtonLink href="/diaries" size="sm" variant={transparent ? "light" : "primary"}>
+              My diaries
             </ButtonLink>
           ) : (
             <>
               <Link href="/login" className="px-2 text-sm font-medium tracking-wide hover:underline hover:underline-offset-4">
                 Sign in
               </Link>
-              <ButtonLink href="/signup" size="sm" variant={transparent ? "light" : "primary"}>
-                Start planning
+              <ButtonLink href="/signup?next=/diaries/new" size="sm" variant={transparent ? "light" : "primary"}>
+                Start a diary
               </ButtonLink>
             </>
           )}
@@ -99,10 +99,10 @@ export function SiteNav({ overHero = false, signedIn }: { overHero?: boolean; si
           </ul>
           <div className="mt-8 flex flex-col gap-3">
             {signedIn ? (
-              <ButtonLink href="/dashboard" onClick={() => setOpen(false)}>My trips</ButtonLink>
+              <ButtonLink href="/diaries" onClick={() => setOpen(false)}>My diaries</ButtonLink>
             ) : (
               <>
-                <ButtonLink href="/signup" onClick={() => setOpen(false)}>Start planning</ButtonLink>
+                <ButtonLink href="/signup?next=/diaries/new" onClick={() => setOpen(false)}>Start a diary</ButtonLink>
                 <ButtonLink href="/login" variant="outline" onClick={() => setOpen(false)}>Sign in</ButtonLink>
               </>
             )}

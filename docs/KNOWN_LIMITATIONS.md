@@ -15,6 +15,19 @@ These are implemented but depend on accounts that were not available during deve
 | OpenStreetMap import | Tag normalisation; the pipeline's de-duplication, idempotency, failure recording and retry, with a fake provider | A live Overpass request — the public endpoint returned 502 when tried |
 | Row Level Security | Policies tested against a local PostgreSQL role using the same `auth.uid()` contract | The same checks through Supabase's own API |
 
+## Diaries
+
+The diary product was added as a front end after the trip planner, working from a summary of the product proposal rather than the proposal itself — the five styles, the page layouts and the sample content are an interpretation that should be checked against it.
+
+- **Saved in the browser only.** Diaries and photos live in IndexedDB on the device that made them. They do not sync, are lost if site data is cleared, and are not tied to the signed-in account. Moving them to the database and Supabase Storage is the next step.
+- **No publishing or sharing of your own diaries.** The Discover and public diary pages show only the three team-written samples. Reader-made diaries cannot be made public yet.
+- **No collaboration.** Co-editing needs server storage, so no collaboration screen was built rather than shipping a mock one.
+- **Sample diaries are illustrations** written by the team, not accounts by real travellers, and say so.
+- **Photos are resized** to 1600 px on upload to keep storage small; originals are not kept. HEIC files are not accepted.
+- **Page layout is automatic.** Text is flowed into pages by length; you cannot yet position photos or choose page breaks by hand.
+- **No print or PDF export** of a diary yet.
+- **The scroll-driven book** on the landing page pins only on desktop with a mouse or trackpad; on touch screens and with reduced motion it is the ordinary tap-to-turn book. Smooth-scroll hijacking was deliberately not added.
+
 ## Data
 
 - **Coverage is five destinations and 73 places.** This is a representative sample, not nationwide coverage. All 36 states and union territories exist in the hierarchy, but most have no places yet.
@@ -44,6 +57,8 @@ These are implemented but depend on accounts that were not available during deve
 ## Roadmap
 
 1. **Verify against live services** — the checklist in DEPLOYMENT.md §4.
+1. **Diaries on the server** — store diaries in PostgreSQL and photos in Supabase Storage, tied to accounts; then publishing, share links and collaboration.
+1. **Trip → diary** — start a diary from a finished trip, with its days as chapters.
 2. **Grow verified data** — OSM imports city by city with admin review; add licensed sources for hours and prices through the provider interface.
 3. **Rate limiting and abuse protection** on public endpoints.
 4. **Accommodation-aware days** — let travellers pin where they stay and route from there.

@@ -3,7 +3,7 @@ import { alerts, createPlannedTrip, deleteTrip, signIn, signOut, supabaseConfigu
 
 test.describe("authentication and authorization", () => {
   test("protected pages redirect signed-out visitors to sign in, then back", async ({ page }) => {
-    for (const path of ["/dashboard", "/my-trips", "/saved", "/profile", "/trips/new", "/admin"]) {
+    for (const path of ["/dashboard", "/diaries", "/diaries/new", "/my-trips", "/saved", "/profile", "/trips/new", "/admin"]) {
       await page.goto(path);
       await expect(page).toHaveURL(new RegExp(`/login\\?next=${encodeURIComponent(path).replace(/%/g, "%")}`));
     }

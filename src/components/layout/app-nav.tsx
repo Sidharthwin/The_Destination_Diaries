@@ -12,7 +12,8 @@ export function AppNav({ name, isAdmin }: { name: string; isAdmin: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const links = [
-    { href: "/dashboard", label: "Dashboard" },
+    { href: "/diaries", label: "Diaries" },
+    { href: "/dashboard", label: "Trips" },
     { href: "/my-trips", label: "My trips" },
     { href: "/saved", label: "Saved" },
     { href: "/explore", label: "Explore" },
@@ -24,7 +25,7 @@ export function AppNav({ name, isAdmin }: { name: string; isAdmin: boolean }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[90rem] items-center gap-6 px-4 sm:px-6">
-        <Logo href="/dashboard" className="[&>span:first-child]:text-xl" />
+        <Logo href="/diaries" className="[&>span:first-child]:text-xl" />
         <nav aria-label="App" className="hidden flex-1 items-center gap-1 lg:flex">
           {links.map((l) => (
             <Link
@@ -38,7 +39,8 @@ export function AppNav({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <ButtonLink href="/trips/new" size="sm"><Plus aria-hidden className="size-4" /> New trip</ButtonLink>
+          <ButtonLink href="/trips/new" size="sm" variant="outline" className="hidden sm:inline-flex">Plan a trip</ButtonLink>
+          <ButtonLink href="/diaries/new" size="sm"><Plus aria-hidden className="size-4" /> New diary</ButtonLink>
           <form action="/auth/signout" method="post" className="hidden lg:block">
             <button type="submit" title={`Sign out ${name}`} aria-label="Sign out" className="inline-flex size-9 items-center justify-center rounded-full text-ink-soft hover:bg-sand-soft hover:text-ink">
               <LogOut aria-hidden className="size-4" />

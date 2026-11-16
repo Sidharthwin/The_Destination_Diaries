@@ -4,10 +4,11 @@ import { alerts } from "./helpers";
 test.describe("public site and place discovery", () => {
   test("landing page tells the story and every internal link resolves", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("intelligently");
-    await expect(page.getByRole("heading", { name: /A planner that does the sums/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("a book of its own");
+    await expect(page.getByRole("heading", { name: /Not a feed/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Same story/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /A weekend, worked out/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Know the number/i })).toBeVisible();
+    await expect(page.getByText("Until next time.")).toBeVisible();
 
     const hrefs = await page.locator("a[href^='/']").evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute("href")!.split("#")[0]))]);
     expect(hrefs.length).toBeGreaterThan(15);
@@ -17,8 +18,26 @@ test.describe("public site and place discovery", () => {
     }
   });
 
-  test("interactive itinerary demo and budget calculator respond", async ({ page }) => {
+  test("the landing page's diary demos respond", async ({ page }) => {
     await page.goto("/");
+    // Template switcher re-dresses the same spread
+    const styles = page.getByRole("radiogroup", { name: "Diary style" });
+    await styles.getByRole("radio", { name: /Monsoon/ }).click();
+    await expect(styles.getByRole("radio", { name: /Monsoon/ })).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByText("Dark, cinematic pages where photographs run to the edge.").last()).toBeVisible();
+    // Loose photos sort into chapters and can be shuffled again
+    const sort = page.getByRole("button", { name: /Shuffle them again|Sort into chapters/ });
+    // They sort themselves once the photographs scroll into view.
+    await page.locator("section", { has: sort }).locator("figure").first().scrollIntoViewIfNeeded();
+    await expect(sort).toHaveText("Shuffle them again");
+    await sort.click();
+    await expect(sort).toHaveText("Sort into chapters");
+  });
+
+  test("interactive itinerary demo and budget calculator respond", async ({ page }) => {
+    await page.goto("/plan");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("intelligently planned");
+    await expect(page.getByRole("heading", { name: /A planner that does the sums/i })).toBeVisible();
     const demo = page.locator("section", { has: page.getByRole("heading", { name: /A weekend, worked out/i }) });
     await demo.getByRole("tab", { name: "Day 2" }).click();
     await expect(demo.getByRole("tab", { name: "Day 2" })).toHaveAttribute("aria-selected", "true");

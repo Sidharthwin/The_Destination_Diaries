@@ -55,8 +55,8 @@ Run on desktop Chromium + iPhone-size viewport. Reduced-motion is enabled in E2E
 
 | Suite | Count | Notes |
 |---|---|---|
-| Unit (`npm test`) | 56 | Optimizer, scheduler, scorer, budget, money, OSM normalisation, validation, redirect safety |
+| Unit (`npm test`) | 68 | Optimizer, scheduler, scorer, budget, money, OSM normalisation, validation, redirect safety, diary pagination and templates |
 | Integration (`npm run test:int`) | 36 | Real route handlers and services against PostgreSQL + PostGIS; only the session layer and third-party providers are faked |
-| End-to-end (`npm run test:e2e`) | 24 pass, 2 skip | Desktop and mobile. The two skipped tests (sign-up validation, Google hand-off) run automatically once `NEXT_PUBLIC_SUPABASE_URL` is set |
+| End-to-end (`npm run test:e2e`) | 30 pass, 2 skip | Desktop and mobile, including the full diary journey (create, upload, write, reorder, read, reload, delete). The two skipped tests (sign-up validation, Google hand-off) run automatically once `NEXT_PUBLIC_SUPABASE_URL` is set |
 
 End-to-end tests sign in through the local development sign-in (`DEV_AUTH=1`). Real Supabase email and Google flows must be checked by hand after deployment — see DEPLOYMENT.md §4.
